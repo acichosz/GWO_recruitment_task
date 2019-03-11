@@ -4,38 +4,53 @@ import { GameConfig } from "./GameConfig";
 
 export class Playground{
     playgroundFields: PlaygroundField[] = [];
-    scoreManagement: ScoreManagement = new ScoreManagement();
+    unmarkFieldInterval: any;
+    randomFieldInterval: any;
+    didUserClicked: boolean = false;
+
+    constructor(private scoreManagement: ScoreManagement){
+    }
 
     createPlayground(){
         this.createPlaygroundFieldsArray();
         this.drawPlayground();
     }
+
     createPlaygroundFieldsArray(){
-        for(var i: number = 0; i<GameConfig.playgroundSize*GameConfig.playgroundSize; i++ ){
-            let field: PlaygroundField = new PlaygroundField;
+        let fieldsNumber: number = GameConfig.playgroundSize*GameConfig.playgroundSize;
+        for(var i: number = 0; i < fieldsNumber; i++ ){
+            let field: PlaygroundField = new PlaygroundField();
             field.id = i;
             this.playgroundFields.push(field);
         }
     }
 
     drawPlayground(){
-        var playgroundDraft = document.getElementById('playground');
+        let playground = document.getElementById('playground');
         this.playgroundFields.forEach(field => {
-            var playgroundField = document.createElement('div');
+            let playgroundField = document.createElement('div');
             playgroundField.className += 'playgroundField';
             playgroundField.style.width = this.countFieldSize() + 'px';
             playgroundField.style.height = this.countFieldSize() + 'px';
             playgroundField.setAttribute("id", field.id.toString());
             playgroundField.addEventListener('click', this.checkField);
-            playgroundDraft.appendChild(playgroundField);
+            playground.appendChild(playgroundField);
         });
     }
 
     countFieldSize(): string{
-        return ((400-20)/GameConfig.playgroundSize).toString();
+        return ((400)/GameConfig.playgroundSize).toString();
+    }
+
+    clearPlayground(){
+        this.playgroundFields = [];
+        document.querySelectorAll('.playgroundField').forEach(function(a){
+            a.remove()
+        });
     }
 
     checkField = (event =>{
+        this.didUserClicked = true;
         var isActive: boolean = this.checkisFieldActive(event.target.id);
         if(isActive){
             this.scoreManagement.addPoint();
@@ -53,29 +68,49 @@ export class Playground{
     })
 
     randomField(){
-        this.unmarkField();
         var rand = this.playgroundFields[Math.floor(Math.random() * this.playgroundFields.length)];
         rand.isActive = true;
         this.markField();
         return rand
     }
     markField(){
-        this.playgroundFields.forEach(field => {
-            if(field.isActive == true){
-                let fieldToSelect = document.getElementById(field.id.toString())
-                fieldToSelect.style.backgroundColor = 'green';
-                // fieldToSelect.className += 'activeField';
-            }
-        });
+        if(GameConfig.gameTime > 0 && GameConfig.lifes>0){
+            this.playgroundFields.forEach(field => {
+                if(field.isActive == true){
+                    let fieldToSelect = document.getElementById(field.id.toString());
+                    fieldToSelect.classList.add('markedField');
+                }
+            });
+            this.unmarkFieldInterval = setTimeout(() => {
+                this.unmarkField();
+                if(!this.didUserClicked){
+                    this.scoreManagement.removeLife();
+                }
+                this.didUserClicked = false;
+            }, GameConfig.fieldIsActiveDuration);
+            this.randomFieldInterval = setTimeout(() => this.randomField(), GameConfig.changeFieldInterval);
+        }
     }
+    
     unmarkField(){
         this.playgroundFields.forEach(field => {
             if(field.isActive == true){
-                field.isActive = false
+                field.isActive = false;
                 let fieldToSelect = document.getElementById(field.id.toString());
-                fieldToSelect.style.backgroundColor = 'white';
-                // fieldToSelect.classList.remove('activeField');
+                fieldToSelect.classList.remove('markedField');
             }
         });
+    }
+
+    clearPlaygroundIntervals(){
+        clearTimeout(this.unmarkFieldInterval);
+        clearTimeout(this.randomFieldInterval);
+    }
+
+    activatePlayground(){
+        document.getElementById('playground').classList.remove('disabled');
+    }
+    blockPlayground(){
+        document.getElementById('playground').classList.add('disabled');
     }
 }

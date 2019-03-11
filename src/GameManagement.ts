@@ -1,43 +1,46 @@
 import { GameConfig } from "./GameConfig";
 import { Playground } from "./Playground";
-import { ScoreManagement } from "./ScoreManagement";
+import { IScoreObserved } from "./interaces/scoreInterface";
+import { ITimeObserved } from "./interaces/timerInterface";
+import * as $ from 'jquery';
 
-export class GameManagement{
-    playground: Playground = new Playground();
-    scoreManagement: ScoreManagement = new ScoreManagement();
-    startButton = document.getElementById('startButton').addEventListener('click', () => this.startGame());
-    resetButton = document.getElementById('resetButton').addEventListener('click', () => this.resetGame());
-    timer:any = null;
-    
+export class GameManagement implements IScoreObserved, ITimeObserved {
+    constructor(private playground: Playground){
+    }
+
     initGame(){
         this.playground.createPlayground();
-        this.scoreManagement.setScores();
+        GameConfig.setScores();
     }
+
     startGame(){
+        document.getElementById('startButton').classList.add('disabled');
+        GameConfig.setScores();
+        this.playground.activatePlayground();
         this.playground.randomField();
-        setInterval(() => this.playground.randomField(), 3000);
-        this.timerStart();
-    }
-    timerStart(){
-        this.timer = setInterval(() => this.countCurrentTime(), 1000);
-    }
-    timerStop(){
-        clearInterval(this.timer);
-    }
-    countCurrentTime(){
-        GameConfig.gameTime -= 1;
-        this.scoreManagement.setTime();
     }
 
-    finishGame(){
-        this.timerStop();
+    stopGame(){
+        this.playground.blockPlayground();
     }
-
+    
     resetGame(){
-        GameConfig.lifes = 3;
-        GameConfig.gameTime = 60;
-        GameConfig.points = 0;
-        this.scoreManagement.setScores();
-        this.initGame();
+        this.stopGame();
+        this.playground.clearPlaygroundIntervals();
+        this.playground.unmarkField();
+        GameConfig.resetConfig();
     }
+    
+    runOutOfLifes(){
+        this.stopGame();
+        document.getElementById('toast-message').innerHTML = 'Straciłeś wszystkie życia, spróbuj ponownie.';
+        $('.toast').toast('show');
+    };
+
+    runOutOfTime(){
+        this.stopGame();
+        document.getElementById('toast-message').innerHTML = 'Koniec czasu.';
+        $('.toast').toast('show');
+        this.playground.clearPlaygroundIntervals();
+    };
 }

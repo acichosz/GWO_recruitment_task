@@ -1,29 +1,24 @@
 import { GameConfig } from "./GameConfig";
+import { IScoreObserved } from "./interaces/scoreInterface";
+import * as $ from 'jquery';
 
 export class ScoreManagement{
+    private runOutOfLifes: IScoreObserved[] = [];
+
+    addObserver(observer: IScoreObserved){
+        this.runOutOfLifes.push(observer);
+    }
     addPoint(){
         GameConfig.points += 1;
-        this.setPoints();
+        GameConfig.setPoints();
     }
     removeLife(){
+        document.getElementById('toast-message').innerHTML = 'Straciłeś życie.';
+        $('.toast').toast('show');
         GameConfig.lifes -= 1;
-        this.setLifes();
+        GameConfig.setLifes();
         if(GameConfig.lifes == 0){
-            alert('Game over!');
+            this.runOutOfLifes.forEach(observer => observer.runOutOfLifes());
         }
-    }
-    setScores(){
-        this.setPoints();
-        this.setLifes();
-        this.setTime();
-    }
-    setPoints(){
-        document.getElementById('points').innerHTML = 'Punkty: ' + GameConfig.points;
-    }
-    setLifes(){
-        document.getElementById('lifes').innerHTML = 'Życia: ' + GameConfig.lifes;
-    }
-    setTime(){
-        document.getElementById('time').innerHTML = 'Czas: ' + GameConfig.gameTime;
     }
 }

@@ -1,6 +1,13 @@
+*{
+    font-family: 'Roboto', sans-serif;
+}
 .flexContainer{
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
+}
+h1{
+    text-align: center;
+    font-family: 'Indie Flower', cursive;
 }
 #gameWindow{
     margin: 0 auto;
@@ -10,18 +17,16 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
-
 .playgroundField{
-    border: 1px solid gray;
+    background-color: white;
+    border-radius: 3px;
+    border: 2px solid lightgray;
     box-sizing: border-box;
-}
-.activeField{
-    background-color: green;
+    cursor: pointer;
 }
 #playground{
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
     height: 400px;
 }
 .buttons{
@@ -30,5 +35,32 @@
     margin-top: 20px;
 }
 .buttons button{
-    width: 120px;
+    margin: 10px auto;
+}
+body{
+    width: 100vw;
+    height: 100vh;
+    padding: 50px;
+    background: radial-gradient(circle, rgba(181,238,174,1) 0%, rgba(148,161,233,1) 100%); 
+}
+.disabled{
+    pointer-events: none;
+    opacity: 0.4;
+}
+.redText{
+    font-weight: bold;
+    color: red;
+}
+.markedField{
+    background-color: #228B22;
+}
+.visible{
+    visibility: visible;
+}
+.modal-body label{
+    text-align: center;
+    width: 100%;
+}
+.modal-footer button{
+    margin: 0 auto;
 }
